@@ -2,7 +2,7 @@ from flask import Flask, request
 import requests
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 app = Flask(__name__)
 
@@ -39,12 +39,16 @@ def webhook():
         symbol = data.get("symbol", "Unknown")
         price = data.get("price", "-")
         
+        # 한국 시간 (KST = UTC+9)
+        kst = timezone(timedelta(hours=9))
+        kst_time = datetime.now(kst)
+        
         message = (
             f"{emoji} <b>{signal_type}</b>\n"
             f"━━━━━━━━━━━━━━\n"
             f"📌 종목: <code>{symbol}</code>\n"
             f"💰 가격: <code>{price}</code>\n"
-            f"🕐 {datetime.now().strftime('%H:%M:%S')}"
+            f"🕐 {kst_time.strftime('%H:%M:%S')}"
         )
         
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
