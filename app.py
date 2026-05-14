@@ -19,7 +19,11 @@ EMOJI_MAP = {
 @app.route("/webhook", methods=["POST"])
 def webhook():
     try:
-        data = request.json
+        # Content-Type에 관계없이 JSON 파싱 시도
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.get_json(force=True)
         
         if data.get("secret") != SECRET:
             return "Unauthorized", 401
