@@ -12,7 +12,7 @@ CHANNELS = json.loads(os.environ.get("CHANNELS", "{}"))
 
 EMOJI_MAP = {
     "div_4h": "⏰",
-    "div_5m": "⚡",
+    "div_5": "⚡",
     "etc": "🔔",
 }
 
