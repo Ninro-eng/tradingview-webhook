@@ -12,8 +12,9 @@ CHANNELS = json.loads(os.environ.get("CHANNELS", "{}"))
 
 EMOJI_MAP = {
     "div_4h": "⏰",
-    "div_5": "⚡",
+    "div_5m": "⚡",
     "etc": "🔔",
+    "sniper_bb": "🎯",
 }
 
 @app.route("/webhook", methods=["POST"])
@@ -38,18 +39,30 @@ def webhook():
         signal_type = data.get("type", "신호 발생")
         symbol = data.get("symbol", "Unknown")
         price = data.get("price", "-")
+        stop = data.get("stop")  # 손절가
+        leverage = data.get("leverage")  # 배율
         
         # 한국 시간 (KST = UTC+9)
         kst = timezone(timedelta(hours=9))
         kst_time = datetime.now(kst)
         
-        message = (
-            f"{emoji} <b>{signal_type}</b>\n"
-            f"━━━━━━━━━━━━━━\n"
-            f"📌 종목: <code>{symbol}</code>\n"
-            f"💰 가격: <code>{price}</code>\n"
-            f"🕐 {kst_time.strftime('%H:%M:%S')}"
-        )
+        # 메시지 구성
+        message_parts = [
+            f"{emoji} <b>{signal_type}</b>",
+            f"━━━━━━━━━━━━━━",
+            f"📌 종목: <code>{symbol}</code>",
+            f"💰 진입: <code>{price}</code>"
+        ]
+        
+        # 손절가와 배율이 있으면 추가
+        if stop:
+            message_parts.append(f"🛑 손절: <code>{stop}</code>")
+        if leverage:
+            message_parts.append(f"⚡ 배율: <code>{leverage}</code>")
+        
+        message_parts.append(f"🕐 {kst_time.strftime('%H:%M:%S')}")
+        
+        message = "\n".join(message_parts)
         
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         response = requests.post(url, json={
